@@ -31,7 +31,9 @@
     if (_textField == nil) {
         RDatePicker *pickview = [[RDatePicker alloc]init];
         pickview.frame = CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 260);
-
+        pickview.complete = ^(NSInteger minute,NSInteger hour, NSInteger day, NSInteger month, NSInteger year, NSDate *date){
+            NSLog(@"%@",date);
+        };
         _textField = [[UITextField alloc] init];
         _textField.inputView = pickview;
         //_textField.inputAccessoryView = self.accessoryView;

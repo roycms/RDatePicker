@@ -23,6 +23,8 @@
 @property (nonatomic,assign)NSInteger dayIndex;
 @property (nonatomic,assign)NSInteger hourIndex;
 @property (nonatomic,assign)NSInteger minuteIndex;
+
+@property (nonatomic,assign)NSInteger dayCount;
 @end
 
 #define DATEPICKER_MAXDATE 2050
@@ -38,8 +40,19 @@
         self.pickerView.frame = CGRectMake(0, 0,MainScreenWidth, 260);
         [self createDataSource]; //初始化数据
         [self setNowDate]; //设置默认选中是当前的时间
+        
+        self.dayCount = [self daysfromYear:self.yearIndex andMonth:self.monthIndex+1]+1;
     }
     return self;
+}
+-(void)setDayCount:(NSInteger)dayCount{
+    _dayCount = dayCount;
+    self.dayArray = [NSMutableArray array];
+    for (int i= 0 ; i<dayCount; i++) {
+        [self.dayArray addObject:[NSString stringWithFormat:@"%02d日",i]];
+    }
+    
+    [self.pickerView reloadAllComponents];
 }
 
 //创建数据源
@@ -138,9 +151,11 @@
 {
     if (component == 0) {
         self.yearIndex = row;
+        self.dayCount = [self daysfromYear:self.yearIndex andMonth:self.monthIndex+1]+1;
     }
     else if (component == 1){
         self.monthIndex = row;
+        self.dayCount = [self daysfromYear:self.yearIndex andMonth:self.monthIndex+1]+1;
     }
     else if (component == 2){
         self.dayIndex = row;
@@ -151,9 +166,12 @@
     else{
         self.minuteIndex = row;
     }
-    
-    NSLog(@"%ld - %ld - %ld - %ld - %ld",self.yearIndex,self.monthIndex,self.dayIndex,self.hourIndex,self.minuteIndex);
-}
+
+    if (self.complete) {
+        NSDate *date = [self dateInYear:self.yearIndex+DATEPICKER_MINDATE month:self.monthIndex+1 day:self.dayIndex hour:self.hourIndex minute:self.minuteIndex];
+        self.complete(self.minuteIndex,self.hourIndex,self.dayIndex,self.monthIndex+1,self.yearIndex+DATEPICKER_MINDATE,date);
+    }
+  }
 
 //创建pickerView
 - (UIPickerView *)pickerView
@@ -233,10 +251,16 @@
 
 }
 
-//选中后的时间
-- (void)getSelectDate{
-      NSLog(@"%ld - %ld - %ld - %ld - %ld",self.yearIndex + DATEPICKER_MINDATE,self.monthIndex + 1,self.dayIndex,self.hourIndex,self.minuteIndex);
+- (NSDate *)dateInYear:(NSInteger)year month:(NSInteger)month day:(NSInteger)day hour:(NSInteger)hour minute:(NSInteger)minute {
     
+    NSDateComponents *dateComponents = [[NSCalendar currentCalendar] components:NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay fromDate:[NSDate date]];
+    dateComponents.year = year;
+    dateComponents.month = month;
+    dateComponents.day = day;
+    dateComponents.hour = hour;
+    dateComponents.minute = minute;
+    
+    return [[NSCalendar currentCalendar] dateFromComponents:dateComponents];
 }
 
 @end
